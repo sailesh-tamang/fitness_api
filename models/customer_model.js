@@ -15,8 +15,8 @@ const CustomerSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
         match: [
-            /^[^\s@]+@gmail\.com$/,
-            "Email must be a valid Gmail address (example@gmail.com)",
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            "Email must be a valid email address",
         ],
     },
     password: {
@@ -30,8 +30,8 @@ const CustomerSchema = new mongoose.Schema({
         required: [true, "Please add a phone number"],
         trim: true,
         match: [
-            /^\d{10}$/,
-            "Phone number must be exactly 10 digits",
+            /^\d{7,15}$/,
+            "Phone number must be 7-15 digits",
         ],
     },
     profilePicture: {
