@@ -31,6 +31,12 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
+const stepsSyncLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute
+  message: "Too many step sync requests, please try again later",
+});
+
 //  Body Parsers
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -53,9 +59,12 @@ app.use(limiter);
 
 //  Routes
 const customerRoutes = require("./routes/customer");
+const stepsRoutes = require("./routes/steps");
 
 app.use("/fitness/customers/login", authLimiter);
 app.use("/fitness/customers", customerRoutes);
+app.use("/fitness/steps/sync", stepsSyncLimiter);
+app.use("/fitness/steps", stepsRoutes);
 
 //  Error Handler
 app.use(errorHandler);
