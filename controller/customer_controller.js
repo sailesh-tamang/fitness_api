@@ -61,22 +61,42 @@ exports.getAllCustomer = asyncHandler(async (req, res) => {
 });
 
 exports.updateCustomer = asyncHandler(async (req, res) => {
-    const { name, email, password, phoneNumber } = req.body;
+    const { name, email, phoneNumber } = req.body;
     
     const customer = await Customer.findById(req.params.id);
 
     if (!customer) {
-        return res.status(404).json({ message: "Customer not found" });
+        return res.status(404).json({ 
+            success: false,
+            message: "Customer not found" 
+        });
     }
 
     if (req.user._id.toString() !== req.params.id) {
-        return res.status(403).json({ message: "Not authorized to update this customer" });
+        return res.status(403).json({ 
+            success: false,
+            message: "You can only update your own profile" 
+        });
+    }
+
+    // Check if email is already used by another user
+    if (email) {
+        const existingUser = await Customer.findOne({ 
+            email: email, 
+            _id: { $ne: req.params.id } 
+        });
+        
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email already in use by another account'
+            });
+        }
     }
 
     //update fields
     customer.name = name || customer.name;
     customer.email = email || customer.email;
-    customer.password = password || customer.password;
     customer.phoneNumber = phoneNumber || customer.phoneNumber;
 
     // Handle profile picture update if file is provided
@@ -96,10 +116,6 @@ exports.updateCustomer = asyncHandler(async (req, res) => {
         customer.profilePicture = `/public/profile_picture/${req.file.filename}`;
     }
 
-    if (password) {
-        customer.password = password;
-    }
-
     await customer.save();
 
     //remove password from response
@@ -108,10 +124,7 @@ exports.updateCustomer = asyncHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        data: {
-            ...customerResponse,
-            photoUrl: customerResponse.profilePicture
-        },
+        data: customerResponse
     });
 });
 

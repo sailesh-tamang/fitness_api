@@ -23,6 +23,8 @@ connectDB();
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  // Do not rate limit static profile image requests
+  skip: (req) => req.path.startsWith("/profile_picture"),
 });
 
 const authLimiter = rateLimit({
